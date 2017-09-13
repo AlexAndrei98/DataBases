@@ -1,0 +1,5 @@
+c|stl|Saint Louis |
+c|chi|Chicago|
+t|chi|Cubs|
+t|stl|Cardinals|
+g|Cubs|3|Cardinals|5|
