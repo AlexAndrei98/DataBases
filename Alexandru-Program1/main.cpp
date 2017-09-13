@@ -806,6 +806,10 @@ void getStats(char team[]){
         else if (strlen(team)<5){
             cout<< team<< "\t\t\t\t\t"<<totalWins<<"\t"<<totalLoss<<"\t"<<pointsScore<<"\t"<<pointsReceived<<endl;
         }
+//    formatting the score appropriately using tabs based on the length of the team name
+        else if (strlen(team)<6){
+            cout<< team<< "\t\t\t\t"<<totalWins<<"\t"<<totalLoss<<"\t"<<pointsScore<<"\t"<<pointsReceived<<endl;
+        }
 //      formatting the score appropriately using tabs based on the length of the team name
         else{
             cout<< team<< "\t\t\t\t"<<totalWins<<"\t"<<totalLoss<<"\t"<<pointsScore<<"\t"<<pointsReceived<<endl;
@@ -820,6 +824,10 @@ void getStats(char team[]){
 //    formatting the score appropriately using tabs based on the length of the team name
     else if (strlen(team)<5){
         cout<< team<< "\t\t\t\t\t"<<totalWins<<"\t"<<totalLoss<<"\t"<<pointsScore<<"\t"<<pointsReceived<<endl;
+    }
+//    formatting the score appropriately using tabs based on the length of the team name
+    else if (strlen(team)<6){
+        cout<< team<< "\t\t\t\t"<<totalWins<<"\t"<<totalLoss<<"\t"<<pointsScore<<"\t"<<pointsReceived<<endl;
     }
 //    formatting the score appropriately using tabs based on the length of the team name
     else{
