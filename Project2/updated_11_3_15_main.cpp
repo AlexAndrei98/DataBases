@@ -9,6 +9,7 @@
 using namespace std;
 
 int AddCity(string, string, MYSQL*, MYSQL);
+int AddTeam(string, string, MYSQL*, MYSQL);
 
 string citiesTable = "table_c";
 string teamTable = "table_t";
@@ -147,17 +148,39 @@ int main()
 		{
 
 		case 'a':
-			cin >> cityCode;
-			//get white space after the city code
+			cin >> input2;
 			cin.get();
-			//get the team name 
-			getline(cin,cityName);
-			//get the status of the function
-			status = AddCity(cityCode, cityName, conn, mysql);
-			if (status != 0) {
-				// Print error message and quit
-				cout << mysql_error(&mysql) << endl;
-				return 1;
+			switch (input2)
+			{
+				case 'c':
+				cin >> cityCode;
+				//get white space after the city code
+				cin.get();
+				//get the team name 
+				getline(cin, cityName);
+				//get the status of the function
+				status = AddCity(cityCode, cityName, conn, mysql);
+				if (status != 0) {
+					// Print error message and quit
+					cout << mysql_error(&mysql) << endl;
+					return 1;
+				}
+				break;
+
+				case 't':
+					cin >> cityCode;
+					//get white space after the city code
+					cin.get();
+					//get the team name 
+					getline(cin, cityName);
+					//get the status of the function
+					status = AddTeam(cityCode, cityName, conn, mysql);
+					if (status != 0) {
+						// Print error message and quit
+						cout << mysql_error(&mysql) << endl;
+						return 1;
+					}
+					break;
 			}
 			break;
 
@@ -188,6 +211,24 @@ int AddCity(string cityCode, string cityName, MYSQL *conn, MYSQL mysql) {
 	myQuery += " ',  ' ";
 	myQuery += cityName;
 	myQuery += " ');";
+	// Send the query, attempting to add row to db
+	status = mysql_query(conn, myQuery.c_str());
+
+	return status;
+}
+
+int AddTeam(string cityCode, string teamName, MYSQL *conn, MYSQL mysql) {
+
+	int status;
+	string myQuery = "insert into ";
+	myQuery += teamTable;
+	myQuery += " VALUES(' ";
+	myQuery += cityCode;
+	myQuery += " ',  ' ";
+	myQuery += teamName;
+	myQuery += " ');";
+
+	cout << myQuery << endl;
 	// Send the query, attempting to add row to db
 	status = mysql_query(conn, myQuery.c_str());
 
