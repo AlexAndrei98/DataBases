@@ -8,6 +8,12 @@
 
 using namespace std;
 
+int AddCity(string, string, MYSQL*, MYSQL);
+
+string citiesTable = "table_c";
+string teamTable = "table_t";
+string gamesTable = "table_g";
+
 // reads in a password without echoing it to the screen
 string myget_passwd()
 {
@@ -30,6 +36,8 @@ string myget_passwd()
 
 int main()
 {
+
+
 	// mysql connection and query variables
 	MYSQL *conn, // actual mysql connection
 		mysql;   // local mysql data
@@ -46,33 +54,19 @@ int main()
 	cout << "initializing client DB subsystem ..."; cout.flush();
 	mysql_init(&mysql);
 	cout << "Done!" << endl;
-	/*
-	// get user credentials and mysql server info
-	cout << "Enter MySQL database hostname (or IP adress):";
-	cin >> db_host;
 
-	cout << "Enter MySQL database username:";
-	cin >> db_user;
-
-	cout << "Enter MySQL database password:";
-	db_password = myget_passwd();
-
-	// could also prompt for this, if desired
-	db_name = db_user;
-	*/
 	cout << "Done!" << endl;
 	db_host = "localhost";
 	db_user = "andreia";
 	db_password = "07261111";
 	db_name = "andreia";
-
 	// go out and connect to the mysql server
 	cout << "Connecting to remote DB ..."; cout.flush();
 	conn = mysql_real_connect(&mysql,
 		db_host.c_str(), db_user.c_str(), db_password.c_str(), db_user.c_str(),
 		0, 0, 0); // last three are usually 0's
 
-				  // if we couldn't setup the connection ...
+	// if we couldn't setup the connection ...
 	if (conn == NULL)
 	{
 		// print out the error message as to why ...
@@ -82,92 +76,120 @@ int main()
 	else
 		cout << "DB connection established" << endl;
 
-
-	// now, send mysql our query ...
 	int status;
-
-
-	/*
-	string myQuery = "select * from brandNewTable";
-	cout << "What is the author name?";
-	string authName;
-	cin >> authName;
-
-	myQuery += " where Name= \"";
-	myQuery += authName + "\"";
-	*/
-
-	string myQuery = "insert into brandNewTable values(\'";
-	
-	string bookName;
-	string authName;
-	string ISBN;
-
-	cout << "insert book Name" << endl;
-	cin >> bookName;
-	
-	myQuery += bookName;
-	myQuery += "','";
-
-	cout << "insert auth Name" << endl;
-	cin >> authName;
-
-	myQuery += authName;
-	myQuery += "',";
-
-	cout << "insert ISBN" << endl;
-	cin >> ISBN;
-
-	myQuery += ISBN;
-	myQuery += ");";
-
-
-	
-	cout << "The Query is:" << myQuery << endl;
-
-	cout << "Sending query ..."; cout.flush();
+	//-------------- create the cities table------------------------ 
+	string myQuery = "create table if not exists ";
+	myQuery += citiesTable;
+	myQuery += " (cityCode char(100) NOT NULL, CityName char(100) NOT NULL, ";
+	myQuery += "PRIMARY KEY(cityCode)); ";
 	status = mysql_query(conn, myQuery.c_str());
-	cout << "Done" << endl;
 
-	// if the query didn't work ...
-	if (status != 0)
-	{
-		// ... explain why ...
+	// If error creating table
+	if (status != 0) {
+		// Print error message and quit
 		cout << mysql_error(&mysql) << endl;
-		return 1;  // ... and exit program
+		return 1;
 	}
-	else
-		cout << "Query succeeded" << endl;
+	
+	//-------------- create the team table------------------------ 
+	myQuery = "create table if not exists ";
+	myQuery += teamTable;
+	myQuery += " (cityCode char(100) NOT NULL, teamName char(100) NOT NULL,  ";
+	myQuery += "PRIMARY KEY(cityCode, teamName), ";
+	myQuery += "FOREIGN KEY(cityCode) REFERENCES ";
+	myQuery += citiesTable;
+	myQuery += " (cityCode) ";
+	myQuery += ");";
+	status = mysql_query(conn, myQuery.c_str());
 
-	//exit(0); // uncomment to keep create table ....
+	// If error creating table
+	if (status != 0) {
+		// Print error message and quit
+		cout << mysql_error(&mysql) << endl;
+		return 1;
+	}
 
 
+	//-------------- create the team table------------------------ 
+	myQuery = "create table if not exists ";
+	myQuery += gamesTable;
+	myQuery += " (team1 char(100) NOT NULL, score1 int, team2 char(100) NOT NULL, score2 int, ";
+	myQuery += "PRIMARY KEY(team1, score1, team2, score2 ), ";
+	myQuery += "FOREIGN KEY(team1) REFERENCES ";
+	myQuery += teamTable;
+	myQuery += "(cityCode),";
+	myQuery += "FOREIGN KEY(team2) REFERENCES ";
+	myQuery += teamTable;
+	myQuery += " (cityCode) ";
+	myQuery += ");";
+	status = mysql_query(conn, myQuery.c_str());
 
-	// get the query result(s)
-	res = mysql_store_result(conn);
+	// If error creating table
+	if (status != 0) {
+		// Print error message and quit
+		cout << mysql_error(&mysql) << endl;
+		return 1;
+	}
+	//------------------------------ END OF SQL COMMANDS---------------------------------------
 
-	// go through each line (row) of the answer table
-	/*for (row = mysql_fetch_row(res);
-		row != NULL;
-		row = mysql_fetch_row(res))
-	{
+	bool quit = false;
+	char input;
+	char input2;
 
-		// print out the first 2 colums; they are stored in
-		//    an "array-like" manner
-		cout << row[2] << "  " << row[1] << endl;
-	}*/
+	while (!quit) {
 
-	// clean up the query
-	mysql_free_result(res);
+		cout << ">>> ";
+		cin >> input;
+		string cityCode;
+		string cityName;
 
-	// clean up the connection
-	mysql_close(conn);
+		switch (input)
+		{
 
-	/*
-	cout << "Press the any key (wherever that is) ...";
-	char ch;
-	cin >> ch;
-	*/
+		case 'a':
+			cin >> cityCode;
+			//get white space after the city code
+			cin.get();
+			//get the team name 
+			getline(cin,cityName);
+			//get the status of the function
+			status = AddCity(cityCode, cityName, conn, mysql);
+			if (status != 0) {
+				// Print error message and quit
+				cout << mysql_error(&mysql) << endl;
+				return 1;
+			}
+			break;
 
+		case 'q':
+			quit = true;
+			cout << "[Goodbye.]";
+			break;
+			//                if there is an error
+		default:
+			cout << "I do not understand \"" << input << "\".";
+			cout << endl;
+			break;
+		}
+
+
+	}
+	
 	return 0;
+}
+
+int AddCity(string cityCode, string cityName, MYSQL *conn, MYSQL mysql) {
+	
+	int status;
+	string myQuery = "insert into ";
+	myQuery += citiesTable;
+	myQuery += " VALUES(' ";
+	myQuery += cityCode;
+	myQuery += " ',  ' ";
+	myQuery += cityName;
+	myQuery += " ');";
+	// Send the query, attempting to add row to db
+	status = mysql_query(conn, myQuery.c_str());
+
+	return status;
 }
