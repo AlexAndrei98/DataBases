@@ -11,6 +11,7 @@ using namespace std;
 int AddCity(string, string, MYSQL*, MYSQL);
 int AddTeam(string, string, MYSQL*, MYSQL);
 int AddGame(string, string, string, string, MYSQL*, MYSQL);
+int list(char, MYSQL*, MYSQL);
 
 string citiesTable = "table_c";
 string teamTable = "table_t";
@@ -213,6 +214,16 @@ int main()
 			}
 			break;
 
+		case 'l':
+			cin >> input2;
+			status = list(input2, conn, mysql);
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+				//return 1;
+			}
+			break;
+
 		case 'q':
 			quit = true;
 			cout << "[Goodbye.]";
@@ -284,4 +295,48 @@ int AddGame(string team1, string score1, string team2, string score2, MYSQL *con
 	status = mysql_query(conn, myQuery.c_str());
 
 	return status;
+}
+
+int list(char input2, MYSQL *conn, MYSQL mysql) {
+
+	string myQuery;
+	int status;
+	MYSQL_RES *res, *res2;
+	MYSQL_ROW row, row2;
+	switch (input2)
+	{
+	case('c'):
+		myQuery = "select * from " + citiesTable + " ;";
+		break;
+	case('t'):
+		myQuery = "select * from " + teamTable + " ;";
+		break;
+	case('g'):
+		myQuery = "select * from " + gamesTable + " ;";
+		break;
+	default:
+		cout << "Wrong query" << endl;
+		break;
+	}
+
+	status = mysql_query(conn, myQuery.c_str());
+	// Get results
+	res = mysql_store_result(conn);
+
+	if (input2 = 'g') {
+		for (row = mysql_fetch_row(res); row != NULL;
+			row = mysql_fetch_row(res)) {
+			cout << row[0] << " \t" << row[1] << " \t" << row[2] << " \t" << row[3] << endl;
+ 		}
+
+	}
+	else {
+		for (row = mysql_fetch_row(res); row != NULL;
+			row = mysql_fetch_row(res)) {
+			cout << row[0] << " \t" << row[1] << " \t" << row[2] << endl;
+		}
+	}
+
+	return status;
+
 }
