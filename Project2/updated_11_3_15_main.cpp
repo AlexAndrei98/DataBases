@@ -10,6 +10,7 @@ using namespace std;
 
 int AddCity(string, string, MYSQL*, MYSQL);
 int AddTeam(string, string, MYSQL*, MYSQL);
+int AddGame(string, string, string, string, MYSQL*, MYSQL);
 
 string citiesTable = "table_c";
 string teamTable = "table_t";
@@ -84,7 +85,9 @@ int main()
 	myQuery += " (cityCode char(100) NOT NULL, CityName char(100) NOT NULL, ";
 	myQuery += "PRIMARY KEY(cityCode)); ";
 	status = mysql_query(conn, myQuery.c_str());
-
+	cout << endl;
+	cout << myQuery << endl;
+	cout << endl;
 	// If error creating table
 	if (status != 0) {
 		// Print error message and quit
@@ -96,14 +99,15 @@ int main()
 	myQuery = "create table if not exists ";
 	myQuery += teamTable;
 	myQuery += " (cityCode char(100) NOT NULL, teamName char(100) NOT NULL,  ";
-	myQuery += "PRIMARY KEY(cityCode, teamName), ";
+	myQuery += "PRIMARY KEY(cityCode,teamName), ";
 	myQuery += "FOREIGN KEY(cityCode) REFERENCES ";
 	myQuery += citiesTable;
 	myQuery += " (cityCode) ";
 	myQuery += ");";
 	status = mysql_query(conn, myQuery.c_str());
-
-	// If error creating table
+	cout << endl;
+	cout << myQuery << endl;
+	cout << endl;	// If error creating table
 	if (status != 0) {
 		// Print error message and quit
 		cout << mysql_error(&mysql) << endl;
@@ -111,21 +115,22 @@ int main()
 	}
 
 
-	//-------------- create the team table------------------------ 
+	//-------------- create the games table------------------------ 
 	myQuery = "create table if not exists ";
 	myQuery += gamesTable;
 	myQuery += " (team1 char(100) NOT NULL, score1 int, team2 char(100) NOT NULL, score2 int, ";
 	myQuery += "PRIMARY KEY(team1, score1, team2, score2 ), ";
 	myQuery += "FOREIGN KEY(team1) REFERENCES ";
 	myQuery += teamTable;
-	myQuery += "(cityCode),";
+	myQuery += " (teamName),";
 	myQuery += "FOREIGN KEY(team2) REFERENCES ";
 	myQuery += teamTable;
-	myQuery += " (cityCode) ";
+	myQuery += " (teamName) ";
 	myQuery += ");";
 	status = mysql_query(conn, myQuery.c_str());
-
-	// If error creating table
+	cout << endl;
+	cout << myQuery << endl;
+	cout << endl;	// If error creating table
 	if (status != 0) {
 		// Print error message and quit
 		cout << mysql_error(&mysql) << endl;
@@ -144,6 +149,11 @@ int main()
 		string cityCode;
 		string cityName;
 
+		string team1;
+		string score1;
+		string team2;
+		string score2;
+
 		switch (input)
 		{
 
@@ -161,9 +171,9 @@ int main()
 				//get the status of the function
 				status = AddCity(cityCode, cityName, conn, mysql);
 				if (status != 0) {
-					// Print error message and quit
+					// Print error message
 					cout << mysql_error(&mysql) << endl;
-					return 1;
+					//return 1;
 				}
 				break;
 
@@ -176,9 +186,28 @@ int main()
 					//get the status of the function
 					status = AddTeam(cityCode, cityName, conn, mysql);
 					if (status != 0) {
-						// Print error message and quit
+						// Print error message
 						cout << mysql_error(&mysql) << endl;
-						return 1;
+						//return 1;
+					}
+					break;
+
+				case 'g':
+					cin >> team1;
+					//get white space after the city code
+					cin.get();
+					//get the team name 
+					cin >> score1;
+					cin.get();
+					cin >> team2;
+					cin.get();
+					cin >> score2;
+					//get the status of the function
+					status = AddGame(team1, score1, team2, score2, conn, mysql);
+					if (status != 0) {
+						// Print error message
+						cout << mysql_error(&mysql) << endl;
+						//return 1;
 					}
 					break;
 			}
@@ -206,11 +235,11 @@ int AddCity(string cityCode, string cityName, MYSQL *conn, MYSQL mysql) {
 	int status;
 	string myQuery = "insert into ";
 	myQuery += citiesTable;
-	myQuery += " VALUES(' ";
+	myQuery += " VALUES('";
 	myQuery += cityCode;
-	myQuery += " ',  ' ";
+	myQuery += "',  '";
 	myQuery += cityName;
-	myQuery += " ');";
+	myQuery += "');";
 	// Send the query, attempting to add row to db
 	status = mysql_query(conn, myQuery.c_str());
 
@@ -222,11 +251,33 @@ int AddTeam(string cityCode, string teamName, MYSQL *conn, MYSQL mysql) {
 	int status;
 	string myQuery = "insert into ";
 	myQuery += teamTable;
-	myQuery += " VALUES(' ";
+	myQuery += " VALUES('";
 	myQuery += cityCode;
-	myQuery += " ',  ' ";
+	myQuery += "',  '";
 	myQuery += teamName;
-	myQuery += " ');";
+	myQuery += "');";
+
+	cout << myQuery << endl;
+	// Send the query, attempting to add row to db
+	status = mysql_query(conn, myQuery.c_str());
+
+	return status;
+}
+
+int AddGame(string team1, string score1, string team2, string score2, MYSQL *conn, MYSQL mysql) {
+
+	int status;
+	string myQuery = "insert into ";
+	myQuery += gamesTable;
+	myQuery += " VALUES('";
+	myQuery += team1;
+	myQuery += "',  '";
+	myQuery += score1;
+	myQuery += "',  '";
+	myQuery += team2;
+	myQuery += "',  '";
+	myQuery += score2;
+	myQuery += "');";
 
 	cout << myQuery << endl;
 	// Send the query, attempting to add row to db
