@@ -319,22 +319,34 @@ int list(char input2, MYSQL *conn, MYSQL mysql) {
 		break;
 	}
 
+	cout << myQuery<< endl;
 	status = mysql_query(conn, myQuery.c_str());
 	// Get results
 	res = mysql_store_result(conn);
 
-	if (input2 = 'g') {
+	switch (input2)
+	{
+	case('c'):
+		for (row = mysql_fetch_row(res); row != NULL;
+			row = mysql_fetch_row(res)) {
+			cout << row[0] << " \t" << row[1] <<  endl;
+		}
+		break;
+	case('t'):
+		for (row = mysql_fetch_row(res); row != NULL;
+			row = mysql_fetch_row(res)) {
+			cout << row[0] << " \t" << row[1] <<  endl;
+		}
+		break;
+	case('g'):
 		for (row = mysql_fetch_row(res); row != NULL;
 			row = mysql_fetch_row(res)) {
 			cout << row[0] << " \t" << row[1] << " \t" << row[2] << " \t" << row[3] << endl;
- 		}
-
-	}
-	else {
-		for (row = mysql_fetch_row(res); row != NULL;
-			row = mysql_fetch_row(res)) {
-			cout << row[0] << " \t" << row[1] << " \t" << row[2] << endl;
 		}
+		break;
+	default:
+		cout << "Wrong query" << endl;
+		break;
 	}
 
 	return status;
