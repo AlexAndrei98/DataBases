@@ -16,6 +16,7 @@ int AddGame(string, int, string, int, MYSQL*, MYSQL);
 int AddInitialRecord(string, MYSQL*, MYSQL);
 int list(char, MYSQL*, MYSQL);
 int UpdateRecords(string, int, int, int, int, MYSQL*, MYSQL);
+int teamStandings(string, MYSQL*, MYSQL);
 string citiesTable = "table_c";
 string teamTable = "table_t";
 string gamesTable = "table_g";
@@ -170,7 +171,7 @@ int main()
 		cin >> input;
 		string cityCode;
 		string cityName;
-
+		string standingTeam;
 		string team1;
 		int score1;
 		string team2;
@@ -270,7 +271,15 @@ int main()
 				//return 1;
 			}
 			break;
-
+		case 'r':
+			cin >> standingTeam;
+			status = teamStandings(standingTeam, conn, mysql);
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+				//return 1;
+			}
+			break;
 		case 'q':
 			quit = true;
 			cout << "[Goodbye.]";
@@ -389,8 +398,6 @@ int UpdateRecords(string teamName, int pointsFor, int pointsAgainst, int win, in
 	int currentLosses;
 	
 	for (row = mysql_fetch_row(res); row != NULL;
-
-		
 		row = mysql_fetch_row(res)) {
 		cout << row[1] << " " << row[2] << " " << row[3] << " " << row[4] << endl;
 		
@@ -426,6 +433,24 @@ int UpdateRecords(string teamName, int pointsFor, int pointsAgainst, int win, in
 	
 }
 
+int teamStandings(string teamName, MYSQL *conn, MYSQL mysql) {
+	int status;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+
+	string myQuery = "select * from table_r where team1 = '" + teamName + "';";
+	status = mysql_query(conn, myQuery.c_str());
+	res = mysql_store_result(conn);
+	cout << "__________________________________________________________________" << endl;
+	cout << "\tTeam\t\t\t\tWins\tLosses\tPF\tPA" << endl;
+	for (row = mysql_fetch_row(res); row != NULL;
+		row = mysql_fetch_row(res)) {
+		cout <<"\t"<< row[0] << "\t\t\t\t" << row[1] << "\t" << row[2] << "\t" << row[3] << "\t" << row[4] << endl;
+	}
+
+
+	return status;
+}
 
 int AddGame(string team1, int score1, string team2, int score2, MYSQL *conn, MYSQL mysql) {
 
