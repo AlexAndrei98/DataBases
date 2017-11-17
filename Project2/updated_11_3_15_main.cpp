@@ -16,12 +16,15 @@ int AddGame(string, int, string, int, MYSQL*, MYSQL);
 int AddInitialRecord(string, MYSQL*, MYSQL);
 int list(char, MYSQL*, MYSQL);
 int UpdateRecords(string, int, int, int, int, MYSQL*, MYSQL);
+int UpdateRecordsNeg(string, int, int, int, int, MYSQL*, MYSQL);
 int teamStandings(string, MYSQL*, MYSQL);
 int deleteGames(string, MYSQL*, MYSQL);
 int deleteTeam(string, MYSQL*, MYSQL);
 int deleteRecord(string, MYSQL*, MYSQL);
 int moveCity(string, string, MYSQL*, MYSQL);
 int allTeamsStandings(MYSQL*, MYSQL);
+
+int getDeletedGames1(string, MYSQL*, MYSQL);
 string citiesTable = "table_c";
 string teamTable = "table_t";
 string gamesTable = "table_g";
@@ -330,6 +333,15 @@ int main()
 				//return 1;
 			}
 			break;
+		case 't':
+			cin >> standingTeam;
+			status = getDeletedGames1(standingTeam,  conn, mysql);
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+				//return 1;
+			}
+			break;
 		case 'q':
 			quit = true;
 			cout << "[Goodbye.]";
@@ -474,12 +486,12 @@ int UpdateRecords(string teamName, int pointsFor, int pointsAgainst, int win, in
 	stringstream winString;
 	winString << fixed<< setprecision(5) << currentPercentage;
 	string winP = winString.str();
-
+	/*
 	cout << "wins" << currentWins << endl;
 	cout << "losses " << currentLosses << endl;
 	cout << "percentage "<<currentPercentage << endl;
 	cout << winP << endl;
-
+	*/
 	myQuery = "update ";
 	myQuery += recordsTable;
 	myQuery += " set ";
@@ -489,13 +501,86 @@ int UpdateRecords(string teamName, int pointsFor, int pointsAgainst, int win, in
 	myQuery += "PointsA = " + to_string(currentAgainst) + ",";
 	myQuery += "winPercentage = " + winP;
 	myQuery += " where team1 = '" + teamName + "' ;";
-	//cout << "-------UPDATE RECORDSSS----------" << endl;
-	//cout << myQuery << endl;
-	//cout << "-------UPDATE RECORDSSS----------" << endl;
-	// Send the query, attempting to add row to db
+
+
 	status = mysql_query(conn, myQuery.c_str());
 	return status;
 	
+}
+
+int UpdateRecordsNeg(string teamName, int pointsFor, int pointsAgainst, int win, int zero, MYSQL *conn, MYSQL mysql) {
+
+
+	//string myQuery = "insert into table_r"+
+	int status;
+	string myQuery = "select * from table_r where team1 = '" + teamName + "';";
+	//cout << endl;
+	//cout << myQuery << endl;
+	//cout << endl;
+	// Send the query, attempting to add row to db
+	status = mysql_query(conn, myQuery.c_str());
+
+	//check if query worked
+	if (status != 0) {
+		// Print error message
+		cout << mysql_error(&mysql) << endl;
+		//return 1;
+	}
+	status = 0;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+	res = mysql_store_result(conn);
+
+	int currentFor = 0;
+	int currentAgainst = 0;
+	int currentWins = 0;
+	int currentLosses = 0;
+	float currentPercentage;
+
+	for (row = mysql_fetch_row(res); row != NULL;
+		row = mysql_fetch_row(res)) {
+		//cout << row[1] << " " << row[2] << " " << row[3] << " " << row[4] << endl;
+
+		currentWins = atoi(row[1]);
+		currentLosses = atoi(row[2]);
+		currentFor = atoi(row[3]);
+		currentAgainst = atoi(row[4]);
+	}
+
+	//cout << currentWins << " " << currentLosses << " " << currentFor << " " << currentAgainst << endl;
+	//clearing up the result
+	mysql_free_result(res);
+
+	currentWins -= win;
+	currentLosses -= zero;
+	currentFor -= pointsFor;
+	currentAgainst -= pointsAgainst;
+
+	currentPercentage = (double)currentWins / (double)(currentWins + currentLosses);
+	//changing the float to a string 
+	stringstream winString;
+	winString << fixed << setprecision(5) << currentPercentage;
+	string winP = winString.str();
+	/*
+	cout << "wins" << currentWins << endl;
+	cout << "losses " << currentLosses << endl;
+	cout << "percentage "<<currentPercentage << endl;
+	cout << winP << endl;
+	*/
+	myQuery = "update ";
+	myQuery += recordsTable;
+	myQuery += " set ";
+	myQuery += "win = " + to_string(currentWins) + ",";
+	myQuery += "losses = " + to_string(currentLosses) + ",";
+	myQuery += "PointsF = " + to_string(currentFor) + ",";
+	myQuery += "PointsA = " + to_string(currentAgainst) + ",";
+	myQuery += "winPercentage = " + winP;
+	myQuery += " where team1 = '" + teamName + "' ;";
+
+
+	status = mysql_query(conn, myQuery.c_str());
+	return status;
+
 }
 
 int teamStandings(string teamName, MYSQL *conn, MYSQL mysql) {
@@ -702,6 +787,66 @@ int allTeamsStandings(MYSQL *conn, MYSQL mysql) {
 		row = mysql_fetch_row(res)) {
 		cout << row[0] << setw(20) << row[1] << setw(20) << row[2] << setw(20) << row[3] << setw(20) << row[4] << endl;
 	}
+
+	return status;
+}
+
+int getDeletedGames1(string teamName, MYSQL *conn, MYSQL mysql) {
+
+	int status;
+
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+
+
+	int currentFor = 0;
+	int currentAgainst = 0;
+	int currentWins = 0;
+	int currentLosses = 0;
+	float currentPercentage;
+
+
+	string myQuery = "select * from table_g where team1 = '" + teamName + "';";
+	status = mysql_query(conn, myQuery.c_str());
+
+	res = mysql_store_result(conn);
+
+	for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
+		//cout << row[1] << row[2] << row[3] << endl;
+
+		int score1= atoi(row[1]);
+		int score2 = atoi(row[3]);
+		string team2 = row[2];
+		string team1 = teamName;
+		int win = 0;
+		int zero = 0;
+		//status = teamStandings(team1, conn, mysql);
+		//status = teamStandings(team2, conn, mysql);
+		if (score1 > score2) {
+			win++;
+			status = teamStandings(team1, conn, mysql);
+			status = teamStandings(team2, conn, mysql);
+			
+			cout <<"  "<< row[0] << "  " << row[1] << "  " << row[2] << "  " << row[3] << endl;
+			status = UpdateRecordsNeg(team1, score1, score2, win, zero, conn, mysql);
+			status = UpdateRecordsNeg(team2, score2, score1, zero, win, conn, mysql);
+			win = 0;
+		}
+		else {
+			status = teamStandings(team1, conn, mysql);
+			status = teamStandings(team2, conn, mysql);
+
+			cout << "  " << row[0] << "  " << row[1] << "  " << row[2] << "  " << row[3] << endl;
+
+			win++;
+			status = UpdateRecordsNeg(team1, score1, score2, win, zero, conn, mysql);
+			status = UpdateRecordsNeg(team2, score2, score1, win, zero, conn, mysql);
+			win = 0;
+		}
+
+	}
+
+
 
 	return status;
 }
