@@ -23,8 +23,8 @@ int deleteTeam(string, MYSQL*, MYSQL);
 int deleteRecord(string, MYSQL*, MYSQL);
 int moveCity(string, string, MYSQL*, MYSQL);
 int allTeamsStandings(MYSQL*, MYSQL);
+int UpdateDeletedGamesRecords(string, MYSQL*, MYSQL);
 
-int getDeletedGames1(string, MYSQL*, MYSQL);
 string citiesTable = "table_c";
 string teamTable = "table_t";
 string gamesTable = "table_g";
@@ -125,6 +125,8 @@ int main()
 		cout << mysql_error(&mysql) << endl;
 		return 1;
 	}
+
+
 
 
 	//-------------- create the games table------------------------ 
@@ -300,13 +302,24 @@ int main()
 			//get the team name 
 			cin>>cityName;
 			//get the status of the function
+			status = UpdateDeletedGamesRecords(cityName, conn, mysql);
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+				//return 1;
+			}
 			status = deleteGames(cityName, conn, mysql);
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
 				//return 1;
 			}
-
+			status = deleteRecord(cityName, conn, mysql);
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+				//return 1;
+			}
 			status = deleteTeam(cityName, conn, mysql);
 			if (status != 0) {
 				// Print error message
@@ -314,12 +327,7 @@ int main()
 				//return 1;
 			}
 
-			status = deleteRecord(cityName, conn, mysql);
-			if (status != 0) {
-				// Print error message
-				cout << mysql_error(&mysql) << endl;
-				//return 1;
-			}
+
 
 			break;
 		case 'm':
@@ -335,7 +343,7 @@ int main()
 			break;
 		case 't':
 			cin >> standingTeam;
-			status = getDeletedGames1(standingTeam,  conn, mysql);
+			status = UpdateDeletedGamesRecords(standingTeam,  conn, mysql);
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
@@ -636,7 +644,7 @@ int list(char input2, MYSQL *conn, MYSQL mysql) {
 		myQuery = "select * from " + citiesTable + " ;";
 		break;
 	case('t'):
-		myQuery = "select * from " + teamTable + " ;";
+		myQuery = "select CityName, teamName from table_c, table_t where table_c.cityCode = table_t.cityCode; ";
 		break;
 	case('g'):
 		myQuery = "select * from " + gamesTable + " ;";
@@ -699,36 +707,44 @@ int deleteGames(string teamName, MYSQL *conn, MYSQL mysql) {
 
 int deleteTeam(string teamName, MYSQL *conn, MYSQL mysql) {
 	int status;
-	string dropPK = "alter table " + teamTable +" drop primary key";
+	string cityCode;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+
+	string dropPK = "select cityCode from " + teamTable + " where teamName=\"";
+	dropPK += teamName;
+	dropPK += "\";";
+
 	status = mysql_query(conn, dropPK.c_str());
 	
 	if (status != 0) {
 		// Print error message
 		cout << mysql_error(&mysql) << endl;
-		//return 1;
+		return status;
 	}
 
+	res = mysql_store_result(conn);
+
+	for (row = mysql_fetch_row(res); row != NULL;
+		row = mysql_fetch_row(res)) {
+		cityCode = row[0];
+
+	}
+	
 	string myQuery = "delete from ";
 	myQuery += teamTable;
-	myQuery += " where teamName = '";
+	myQuery += " where teamName = \"";
 	myQuery += teamName;
-	myQuery += "';";
-
+	myQuery += "\" and cityCode =  \"";
+	myQuery += cityCode;
+	myQuery += "\";";
+	
 	cout << endl;
 	cout << myQuery << endl;
 	cout << endl;
 	// Send the query, attempting to add row to db
 	status = mysql_query(conn, myQuery.c_str());
 
-	if (status != 0) {
-		// Print error message
-		cout << mysql_error(&mysql) << endl;
-		//return 1;
-	}
-
-	string addPk = "alter table " + teamTable + " add primary key (teamName,cityCode) ";
-	status = mysql_query(conn, addPk.c_str());
-	status = 0;
 	return status;
 }
 
@@ -791,7 +807,7 @@ int allTeamsStandings(MYSQL *conn, MYSQL mysql) {
 	return status;
 }
 
-int getDeletedGames1(string teamName, MYSQL *conn, MYSQL mysql) {
+int UpdateDeletedGamesRecords(string teamName, MYSQL *conn, MYSQL mysql) {
 
 	int status;
 
