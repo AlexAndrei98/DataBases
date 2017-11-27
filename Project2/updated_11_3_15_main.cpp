@@ -1,3 +1,5 @@
+//Alexandru Andrei
+//11/26/2017
 #include <iostream>
 #include <string>
 #include <iomanip> 
@@ -70,10 +72,15 @@ int main()
 	cout << "Done!" << endl;
 
 	cout << "Done!" << endl;
-	db_host = "localhost";
-	db_user = "andreia";
-	db_password = "07261111";
-	db_name = "andreia";
+	// get user credentials and mysql server info
+	cout << "Enter MySQL database hostname (or IP adress):";
+	cin >> db_host;
+	cout << "Enter MySQL database username:";
+	cin >> db_user;
+	cout << "Enter MySQL database password:";
+	db_password = myget_passwd();
+	// could also prompt for this, if desired
+	db_name = db_user;
 	// go out and connect to the mysql server
 	cout << "Connecting to remote DB ..."; cout.flush();
 	conn = mysql_real_connect(&mysql,
