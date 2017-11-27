@@ -97,14 +97,11 @@ int main()
 	myQuery += " (cityCode char(100) NOT NULL, CityName char(100) NOT NULL, ";
 	myQuery += "PRIMARY KEY(cityCode)); ";
 	status = mysql_query(conn, myQuery.c_str());
-	cout << endl;
-	cout << myQuery << endl;
-	cout << endl;
+	
 	// If error creating table
 	if (status != 0) {
-		// Print error message and quit
+		// Print error message
 		cout << mysql_error(&mysql) << endl;
-		return 1;
 	}
 	
 	//-------------- create the team table------------------------ 
@@ -117,13 +114,10 @@ int main()
 	myQuery += " (cityCode) ";
 	myQuery += ");";
 	status = mysql_query(conn, myQuery.c_str());
-	cout << endl;
-	cout << myQuery << endl;
-	cout << endl;	// If error creating table
+	// If error creating table
 	if (status != 0) {
-		// Print error message and quit
+		// Print error message 
 		cout << mysql_error(&mysql) << endl;
-		return 1;
 	}
 
 
@@ -142,30 +136,25 @@ int main()
 	myQuery += " (teamName) ";
 	myQuery += ");";
 	status = mysql_query(conn, myQuery.c_str());
-	cout << endl;
-	cout << myQuery << endl;
-	cout << endl;	// If error creating table
+	// If error creating table
 	if (status != 0) {
-		// Print error message and quit
+		// Print error message
 		cout << mysql_error(&mysql) << endl;
-		return 1;
 	}
 	//-------------- create the records table------------------------ 
 	myQuery = "create table if not exists ";
 	myQuery += recordsTable;
 	myQuery += " (team1 char(100) NOT NULL, win int, losses int, PointsF int, PointsA int,  winPercentage float ,";
+	myQuery += "PRIMARY KEY(team1), ";
 	myQuery += "FOREIGN KEY(team1) REFERENCES ";
 	myQuery += teamTable;
 	myQuery += " (teamName)";
 	myQuery += ");";
 	status = mysql_query(conn, myQuery.c_str());
-	cout << endl;
-	cout << myQuery << endl;
-	cout << endl;	// If error creating table
+	// If error creating table
 	if (status != 0) {
-		// Print error message and quit
+		// Print error message
 		cout << mysql_error(&mysql) << endl;
-		//return 1;
 	}
 
 
@@ -177,8 +166,12 @@ int main()
 
 	while (!quit) {
 
+		//show console input 
 		cout << ">>> ";
+		//read in the first command
 		cin >> input;
+
+		//initialize variables
 		string cityCode;
 		string cityName;
 		string standingTeam;
@@ -186,16 +179,22 @@ int main()
 		int score1;
 		string team2;
 		int score2;
+		int win = 0;
+		int zero = 0;
 
+		//switch input for the command cases
 		switch (input)
 		{
-
 		case 'a':
+			//read in the next command
 			cin >> input2;
+			//read whitespace
 			cin.get();
 			switch (input2)
 			{
+				//adding a city
 				case 'c':
+				// read city code
 				cin >> cityCode;
 				//get white space after the city code
 				cin.get();
@@ -206,155 +205,168 @@ int main()
 				if (status != 0) {
 					// Print error message
 					cout << mysql_error(&mysql) << endl;
-					//return 1;
 				}
-
-
 				break;
-
+				//adding a team
 				case 't':
+					//read the city code
 					cin >> cityCode;
 					//get white space after the city code
 					cin.get();
 					//get the team name 
 					getline(cin, cityName);
-					//get the status of the function
+					//add a team to the database
 					status = AddTeam(cityCode, cityName, conn, mysql);
+					//check if the function gets an error
 					if (status != 0) {
 						// Print error message
 						cout << mysql_error(&mysql) << endl;
-						//return 1;
 					}
-
+					//create an initial record for the added team
 					status = AddInitialRecord(cityName, conn, mysql);
+					//check if the function gets an error
 					if (status != 0) {
 						// Print error message
 						cout << mysql_error(&mysql) << endl;
-						//return 1;
 					}
 					break;
-
+				//adding a game
 				case 'g':
+					//get the team name
 					cin >> team1;
 					//get white space after the city code
 					cin.get();
-					//get the team name 
+					//get the team score 
 					cin >> score1;
+					//get the white space
 					cin.get();
+					//get the team name
 					cin >> team2;
+					//get the white space
 					cin.get();
+					//get the tea score
 					cin >> score2;
-					//get the status of the function
+					//add the game to the databse
 					status = AddGame(team1, score1, team2, score2, conn, mysql);
+					//check the status of the function
 					if (status != 0) {
 						// Print error message
 						cout << mysql_error(&mysql) << endl;
-						//return 1;
 					}
-					int win = 0;
-					int zero = 0;
-
+					//check who wins in the game
 					if (score1 > score2) {
+						//update the wins
 						win++;
-						
+						//update records of the first team
 						status = UpdateRecords(team1, score1,score2, win,zero, conn, mysql);
+						//update records of the second team
 						status = UpdateRecords(team2, score2, score1, zero, win, conn, mysql);
+						//reset wins
 						win = 0;
 					}
 					else {
+						//update the wins
 						win++;
+						//update records of the first team
 						status = UpdateRecords(team1, score1, score2, zero, win, conn, mysql);
+						//update records of the second team
 						status = UpdateRecords(team2, score2, score1, win, zero, conn, mysql);
+						//reset wins
 						win = 0;
 					}
 
 					break;
 			}
 			break;
-
+		//listing switch
 		case 'l':
+			//reading the second command
 			cin >> input2;
+			//listing function
 			status = list(input2, conn, mysql);
+			//check the status of the function
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
-				//return 1;
 			}
 			break;
+		//record function of a team
 		case 'r':
+			//read in the standing team
 			cin >> standingTeam;
+			//get the standings 
 			status = teamStandings(standingTeam, conn, mysql);
+			//check the status of the function
 			if (status != 0) {
 				// Print error message
-				cout << mysql_error(&mysql) << endl;
-				//return 1;
-			}
+				cout << mysql_error(&mysql) << endl;			}
 			break;
+		//standing function of all teams
 		case 's':
+			//get all of the standings
 			status = allTeamsStandings( conn, mysql);
+			//check the status of the funcion
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
-				//return 1;
 			}
 			break;
+		//delete function
 		case 'd':
 			//get the team name 
 			cin>>cityName;
-			//get the status of the function
+			//update the records 
 			status = UpdateDeletedGamesRecords(cityName, conn, mysql);
+			//check the status of the function
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
-				//return 1;
 			}
+			//delete games 
 			status = deleteGames(cityName, conn, mysql);
+			//update the record of the team
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
-				//return 1;
 			}
+			//delete the record of the team
 			status = deleteRecord(cityName, conn, mysql);
+			//check the status of the function
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
-				//return 1;
 			}
+			//delete the team from the team table
 			status = deleteTeam(cityName, conn, mysql);
+			//check the status of the function
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
-				//return 1;
 			}
-
-
-
 			break;
+		//move a city
 		case 'm':
+			//read in the city code
 			cin >> cityCode;
+			//get the whitespace
 			cin.get();
+			//read in the city
 			cin >> standingTeam;
+			//move the city command
 			status = moveCity(cityCode,standingTeam, conn, mysql);
+			//check the status of the function
 			if (status != 0) {
 				// Print error message
 				cout << mysql_error(&mysql) << endl;
 				//return 1;
 			}
 			break;
-		case 't':
-			cin >> standingTeam;
-			status = UpdateDeletedGamesRecords(standingTeam,  conn, mysql);
-			if (status != 0) {
-				// Print error message
-				cout << mysql_error(&mysql) << endl;
-				//return 1;
-			}
-			break;
+		//quite command
 		case 'q':
 			quit = true;
 			cout << "[Goodbye.]";
 			break;
-			//                if there is an error
+			// if there is an error
 		default:
 			cout << "I do not understand \"" << input << "\".";
 			cout << endl;
@@ -369,7 +381,9 @@ int main()
 
 int AddCity(string cityCode, string cityName, MYSQL *conn, MYSQL mysql) {
 	
+	//initialize status
 	int status;
+	//creating the SQL query 
 	string myQuery = "insert into ";
 	myQuery += citiesTable;
 	myQuery += " VALUES('";
@@ -377,15 +391,17 @@ int AddCity(string cityCode, string cityName, MYSQL *conn, MYSQL mysql) {
 	myQuery += "',  '";
 	myQuery += cityName;
 	myQuery += "');";
-	// Send the query, attempting to add row to db
+	// Send the query
 	status = mysql_query(conn, myQuery.c_str());
-
+	//return status
 	return status;
 }
 
 int AddTeam(string cityCode, string teamName, MYSQL *conn, MYSQL mysql) {
-
+	
+	//initialize status
 	int status;
+	//creating the SQL query 
 	string myQuery = "insert into ";
 	myQuery += teamTable;
 	myQuery += " VALUES('";
@@ -393,27 +409,20 @@ int AddTeam(string cityCode, string teamName, MYSQL *conn, MYSQL mysql) {
 	myQuery += "',  '";
 	myQuery += teamName;
 	myQuery += "');";
-
-
-	cout << myQuery << endl;
-	// Send the query, attempting to add row to db
+	// Send the query
 	status = mysql_query(conn, myQuery.c_str());
-
-
-
 	return status;
 }
 
 int AddInitialRecord(string teamName, MYSQL *conn, MYSQL mysql) {
-
+	//initialize variables
 	int status;
 	int wins=0;
 	int losses = 0;
 	int PA = 0;
 	int PF = 0;
 	int winPercentage = 0;
-	//string myQuery = "insert into table_r"+
-	
+	//creating the SQL query 
 	string myQuery = "insert into ";
 	myQuery += recordsTable;
 	myQuery += " VALUES('";
@@ -429,152 +438,62 @@ int AddInitialRecord(string teamName, MYSQL *conn, MYSQL mysql) {
 	myQuery += "',  '";
 	myQuery += to_string(winPercentage);
 	myQuery += "');";
-	
-	cout << endl;
-	cout << myQuery << endl;
-	cout << endl;
-	// Send the query, attempting to add row to db
+	// Send the query
 	status = mysql_query(conn, myQuery.c_str());
-
-
-
 	return status;
 }
 
 int UpdateRecords(string teamName, int pointsFor, int pointsAgainst, int win, int zero, MYSQL *conn, MYSQL mysql) {
-
-
-	//string myQuery = "insert into table_r"+
+	//initialize variables
 	int status;
-	string myQuery = "select * from table_r where team1 = '" + teamName + "';";
-	//cout << endl;
-	//cout << myQuery << endl;
-	//cout << endl;
-	// Send the query, attempting to add row to db
-	status = mysql_query(conn, myQuery.c_str());
-
-	//check if query worked
-	if (status != 0) {
-		// Print error message
-		cout << mysql_error(&mysql) << endl;
-		//return 1;
-	}
-	status = 0;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
-	res = mysql_store_result(conn);
-
-	int currentFor=0;
-	int currentAgainst=0;
-	int currentWins=0;
-	int currentLosses=0;
-	float currentPercentage;
-	
-	for (row = mysql_fetch_row(res); row != NULL;
-		row = mysql_fetch_row(res)) {
-		cout << row[1] << " " << row[2] << " " << row[3] << " " << row[4] << endl;
-		
-		currentWins = atoi(row[1]);
-		currentLosses = atoi(row[2]);
-		currentFor = atoi(row[3]);
-		currentAgainst = atoi(row[4]); 
-	}
-	
-	//cout << currentWins << " " << currentLosses << " " << currentFor << " " << currentAgainst << endl;
-	//clearing up the result
-	mysql_free_result(res);
-
-	currentWins += win;
-	currentLosses += zero;
-	currentFor += pointsFor;
-	currentAgainst += pointsAgainst;
-	
-	currentPercentage = (double)currentWins / (double)(currentWins + currentLosses);
-	//changing the float to a string 
-	stringstream winString;
-	winString << fixed<< setprecision(5) << currentPercentage;
-	string winP = winString.str();
-	/*
-	cout << "wins" << currentWins << endl;
-	cout << "losses " << currentLosses << endl;
-	cout << "percentage "<<currentPercentage << endl;
-	cout << winP << endl;
-	*/
-	myQuery = "update ";
-	myQuery += recordsTable;
-	myQuery += " set ";
-	myQuery += "win = " + to_string(currentWins) + ",";
-	myQuery += "losses = " + to_string(currentLosses) + ",";
-	myQuery += "PointsF = " + to_string(currentFor) + ",";
-	myQuery += "PointsA = " + to_string(currentAgainst) + ",";
-	myQuery += "winPercentage = " + winP;
-	myQuery += " where team1 = '" + teamName + "' ;";
-
-
-	status = mysql_query(conn, myQuery.c_str());
-	return status;
-	
-}
-
-int UpdateRecordsNeg(string teamName, int pointsFor, int pointsAgainst, int win, int zero, MYSQL *conn, MYSQL mysql) {
-
-
-	//string myQuery = "insert into table_r"+
-	int status;
-	string myQuery = "select * from table_r where team1 = '" + teamName + "';";
-	//cout << endl;
-	//cout << myQuery << endl;
-	//cout << endl;
-	// Send the query, attempting to add row to db
-	status = mysql_query(conn, myQuery.c_str());
-
-	//check if query worked
-	if (status != 0) {
-		// Print error message
-		cout << mysql_error(&mysql) << endl;
-		//return 1;
-	}
-	status = 0;
-	MYSQL_RES *res;
-	MYSQL_ROW row;
-	res = mysql_store_result(conn);
-
 	int currentFor = 0;
 	int currentAgainst = 0;
 	int currentWins = 0;
 	int currentLosses = 0;
 	float currentPercentage;
+	//creating the SQL query 
+	string myQuery = "select * from table_r where team1 = '" + teamName + "';";
+	// Send the query
+	status = mysql_query(conn, myQuery.c_str());
 
-	for (row = mysql_fetch_row(res); row != NULL;
-		row = mysql_fetch_row(res)) {
-		//cout << row[1] << " " << row[2] << " " << row[3] << " " << row[4] << endl;
+	//check if query worked
+	if (status != 0) {
+		// Print error message
+		cout << mysql_error(&mysql) << endl;
+	}
+	//reset status
+	status = 0;
 
+
+	//get the result
+	res = mysql_store_result(conn);
+
+
+	//going thorugh the row
+	for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
+		//get the stats of a team
 		currentWins = atoi(row[1]);
 		currentLosses = atoi(row[2]);
 		currentFor = atoi(row[3]);
-		currentAgainst = atoi(row[4]);
+		currentAgainst = atoi(row[4]); 
 	}
-
-	//cout << currentWins << " " << currentLosses << " " << currentFor << " " << currentAgainst << endl;
 	//clearing up the result
 	mysql_free_result(res);
 
-	currentWins -= win;
-	currentLosses -= zero;
-	currentFor -= pointsFor;
-	currentAgainst -= pointsAgainst;
-
+	//update the stats of the team
+	currentWins += win;
+	currentLosses += zero;
+	currentFor += pointsFor;
+	currentAgainst += pointsAgainst;
 	currentPercentage = (double)currentWins / (double)(currentWins + currentLosses);
+	
 	//changing the float to a string 
 	stringstream winString;
-	winString << fixed << setprecision(5) << currentPercentage;
+	winString << fixed<< setprecision(5) << currentPercentage;
 	string winP = winString.str();
-	/*
-	cout << "wins" << currentWins << endl;
-	cout << "losses " << currentLosses << endl;
-	cout << "percentage "<<currentPercentage << endl;
-	cout << winP << endl;
-	*/
+	//create the SQL query to update the records
 	myQuery = "update ";
 	myQuery += recordsTable;
 	myQuery += " set ";
@@ -584,35 +503,100 @@ int UpdateRecordsNeg(string teamName, int pointsFor, int pointsAgainst, int win,
 	myQuery += "PointsA = " + to_string(currentAgainst) + ",";
 	myQuery += "winPercentage = " + winP;
 	myQuery += " where team1 = '" + teamName + "' ;";
-
-
+	//send the query 
 	status = mysql_query(conn, myQuery.c_str());
 	return status;
-
 }
 
-int teamStandings(string teamName, MYSQL *conn, MYSQL mysql) {
+int UpdateRecordsNeg(string teamName, int pointsFor, int pointsAgainst, int win, int zero, MYSQL *conn, MYSQL mysql) {
+	//initialize variables
 	int status;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
-
+	int currentFor = 0;
+	int currentAgainst = 0;
+	int currentWins = 0;
+	int currentLosses = 0;
+	float currentPercentage;
+	//create the sql command as a string
 	string myQuery = "select * from table_r where team1 = '" + teamName + "';";
+	// Send the query
 	status = mysql_query(conn, myQuery.c_str());
+
+	//check if query worked
+	if (status != 0) {
+		// Print error message
+		cout << mysql_error(&mysql) << endl;
+	}
+	//reset the status
+	status = 0;
+	//store the SQL result
 	res = mysql_store_result(conn);
+
+	//go thorugh the result
+	for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
+		//get the current stats of the team
+		currentWins = atoi(row[1]);
+		currentLosses = atoi(row[2]);
+		currentFor = atoi(row[3]);
+		currentAgainst = atoi(row[4]);
+	}
+	//clearing up the result
+	mysql_free_result(res);
+	//update the stats for the team
+	currentWins -= win;
+	currentLosses -= zero;
+	currentFor -= pointsFor;
+	currentAgainst -= pointsAgainst;
+	currentPercentage = (double)currentWins / (double)(currentWins + currentLosses);
+	//changing the float to a string 
+	stringstream winString;
+	winString << fixed << setprecision(5) << currentPercentage;
+	string winP = winString.str();
+	//create SQL query 
+	myQuery = "update ";
+	myQuery += recordsTable;
+	myQuery += " set ";
+	myQuery += "win = " + to_string(currentWins) + ",";
+	myQuery += "losses = " + to_string(currentLosses) + ",";
+	myQuery += "PointsF = " + to_string(currentFor) + ",";
+	myQuery += "PointsA = " + to_string(currentAgainst) + ",";
+	myQuery += "winPercentage = " + winP;
+	myQuery += " where team1 = '" + teamName + "' ;";
+	//check if the query had an error
+	status = mysql_query(conn, myQuery.c_str());
+	return status;
+}
+
+int teamStandings(string teamName, MYSQL *conn, MYSQL mysql) {
+	//initialize variables
+	int status;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+	//create SQL query
+	string myQuery = "select * from table_r where team1 = '" + teamName + "';";
+
+	status = mysql_query(conn, myQuery.c_str());
+	//check if query worked
+	if (status != 0) {
+		// Print error message
+		cout << mysql_error(&mysql) << endl;
+	}
+	//get the result
+	res = mysql_store_result(conn);
+	//print out the standings 
 	cout << "__________________________________________________________________" << endl;
 	cout << setw(0)<<"Teams"<<setw(10)<<"tWins"<<setw(10)<< "Losses" <<setw(10)<<"PF"<<setw(10)<<"PA" << endl;
-	for (row = mysql_fetch_row(res); row != NULL;
-		row = mysql_fetch_row(res)) {
+	for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
 		cout << setw(0)<< row[0] << setw(10) << row[1] << setw(10) << row[2] << setw(10) << row[3] << setw(10) << row[4] << endl;
 	}
-
-
 	return status;
 }
 
 int AddGame(string team1, int score1, string team2, int score2, MYSQL *conn, MYSQL mysql) {
-
+	//initialize status
 	int status;
+	//create SQL query
 	string myQuery = "insert into ";
 	myQuery += gamesTable;
 	myQuery += " VALUES('";
@@ -624,22 +608,19 @@ int AddGame(string team1, int score1, string team2, int score2, MYSQL *conn, MYS
 	myQuery += "',  '";
 	myQuery += to_string(score2);
 	myQuery += "');";
-
-	cout << myQuery << endl;
-	// Send the query, attempting to add row to db
+	// Send the query
 	status = mysql_query(conn, myQuery.c_str());
-
 	return status;
 }
 
 int list(char input2, MYSQL *conn, MYSQL mysql) {
-
+	//initialize variables
 	string myQuery;
 	int status;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
-	switch (input2)
-	{
+	//different commands for different kind of listing
+	switch (input2){
 	case('c'):
 		myQuery = "select * from " + citiesTable + " ;";
 		break;
@@ -653,29 +634,31 @@ int list(char input2, MYSQL *conn, MYSQL mysql) {
 		cout << "Wrong query" << endl;
 		break;
 	}
-
-	//cout << myQuery<< endl;
 	status = mysql_query(conn, myQuery.c_str());
+	//check if query worked
+	if (status != 0) {
+		// Print error message
+		cout << mysql_error(&mysql) << endl;
+	}
 	// Get results
 	res = mysql_store_result(conn);
-
-	switch (input2)
-	{
+	//print the result from the SQL query
+	switch (input2){
+		//print the cities
 	case('c'):
-		for (row = mysql_fetch_row(res); row != NULL;
-			row = mysql_fetch_row(res)) {
+		for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
 			cout << setw(20) << row[0] << setw(0)<< row[1] <<  endl;
 		}
 		break;
 	case('t'):
-		for (row = mysql_fetch_row(res); row != NULL;
-			row = mysql_fetch_row(res)) {
+		//print the teams
+		for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
 			cout << setw(20) << row[0] << setw(40) << row[1] <<  endl;
 		}
 		break;
 	case('g'):
-		for (row = mysql_fetch_row(res); row != NULL;
-			row = mysql_fetch_row(res)) {
+		//print the games
+		for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
 			cout << row[0] << setw(20) << row[1] << setw(20) << row[2] << setw(20) << row[3] << endl;
 		}
 		break;
@@ -683,14 +666,15 @@ int list(char input2, MYSQL *conn, MYSQL mysql) {
 		cout << "Wrong query" << endl;
 		break;
 	}
+	//free the result
 	mysql_free_result(res);
-
 	return status;
-
 }
 
 int deleteGames(string teamName, MYSQL *conn, MYSQL mysql) {
+	//initialize status
 	int status;
+	//create SQL query
 	string myQuery = "delete from ";
 	myQuery += gamesTable;
 	myQuery += " where team1 = '";
@@ -698,39 +682,36 @@ int deleteGames(string teamName, MYSQL *conn, MYSQL mysql) {
 	myQuery += "' or team2 = '";
 	myQuery += teamName;
 	myQuery += "';";
-
 	// Send the query, attempting to add row to db
 	status = mysql_query(conn, myQuery.c_str());
-
 	return status;
 }
 
 int deleteTeam(string teamName, MYSQL *conn, MYSQL mysql) {
+	//initialize variables
 	int status;
 	string cityCode;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
-
+	//create SQL query to get the ciry code
 	string dropPK = "select cityCode from " + teamTable + " where teamName=\"";
 	dropPK += teamName;
 	dropPK += "\";";
-
+	//send the query to the sql server
 	status = mysql_query(conn, dropPK.c_str());
-	
+	//check the status of the query
 	if (status != 0) {
 		// Print error message
 		cout << mysql_error(&mysql) << endl;
-		return status;
 	}
-
+	//store the query result
 	res = mysql_store_result(conn);
-
-	for (row = mysql_fetch_row(res); row != NULL;
-		row = mysql_fetch_row(res)) {
+	//get the city code of the team
+	for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
 		cityCode = row[0];
 
 	}
-	
+	//initiate the query to delete the team from the database
 	string myQuery = "delete from ";
 	myQuery += teamTable;
 	myQuery += " where teamName = \"";
@@ -739,36 +720,30 @@ int deleteTeam(string teamName, MYSQL *conn, MYSQL mysql) {
 	myQuery += cityCode;
 	myQuery += "\";";
 	
-	cout << endl;
-	cout << myQuery << endl;
-	cout << endl;
-	// Send the query, attempting to add row to db
+	// Send the query to the database
 	status = mysql_query(conn, myQuery.c_str());
 
 	return status;
 }
 
 int deleteRecord(string teamName, MYSQL *conn, MYSQL mysql) {
-	
+	//initialize status
 	int status;
+	//creating the SQL query to delete the record
 	string myQuery = "delete from ";
 	myQuery += recordsTable;
 	myQuery += " where team1 = '";
 	myQuery += teamName;
 	myQuery += "';";
-
-	cout << endl;
-	cout << myQuery << endl;
-	cout << endl;
-	// Send the query, attempting to add row to db
+	// Send the query
 	status = mysql_query(conn, myQuery.c_str());
-
 	return status;
 }
 
 int moveCity(string cityCode, string cityName, MYSQL *conn, MYSQL mysql) {
-
+	//initialize status
 	int status;
+	//creating the SQL query 
 	string myQuery = "update ";
 	myQuery += teamTable;
 	myQuery += " set ";
@@ -777,86 +752,136 @@ int moveCity(string cityCode, string cityName, MYSQL *conn, MYSQL mysql) {
 	myQuery += "' where teamName = '";
 	myQuery += cityName;
 	myQuery += "' ;";
-	// Send the query, attempting to add row to db
+	// Send the query
 	status = mysql_query(conn, myQuery.c_str());
-
-	cout << endl;
-	cout << myQuery << endl;
-	cout << endl;	
-
 	return status;
 }
 
 int allTeamsStandings(MYSQL *conn, MYSQL mysql) {
-
+	//initialize variables
 	int status;
-
 	MYSQL_RES *res;
 	MYSQL_ROW row;
-
-	string myQuery = "select team1,win,losses, PointsF, PointsA from table_r order by winPercentage,PointsF,team1 DESC;";
+	//create sql query to get all team standings
+	string myQuery = "select team1,win,losses, PointsF, PointsA from table_r order by winPercentage,PointsF,team1 ASC;";
+	//send  the query to the server
 	status = mysql_query(conn, myQuery.c_str());
-
-
+	//check the status of the function
+	if (status != 0) {
+		// Print error message
+		cout << mysql_error(&mysql) << endl;
+		//return 1;
+	}
+	//store the result of the sql query
 	res = mysql_store_result(conn);
-	for (row = mysql_fetch_row(res); row != NULL;
-		row = mysql_fetch_row(res)) {
+	//go thorugh the result
+	for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
+		//print the team and their statistics 
 		cout << row[0] << setw(20) << row[1] << setw(20) << row[2] << setw(20) << row[3] << setw(20) << row[4] << endl;
 	}
-
 	return status;
 }
 
 int UpdateDeletedGamesRecords(string teamName, MYSQL *conn, MYSQL mysql) {
 
+	//initialize variables
 	int status;
-
 	MYSQL_RES *res;
 	MYSQL_ROW row;
-
-
 	int currentFor = 0;
 	int currentAgainst = 0;
 	int currentWins = 0;
 	int currentLosses = 0;
 	float currentPercentage;
-
-
+	//create sql query
 	string myQuery = "select * from table_g where team1 = '" + teamName + "';";
+	//send  the query to the server
 	status = mysql_query(conn, myQuery.c_str());
-
+	//check the status of the function
+	if (status != 0) {
+		// Print error message
+		cout << mysql_error(&mysql) << endl;
+	}
+	//store the result of the query
 	res = mysql_store_result(conn);
 
+	//go thorugh the result
 	for (row = mysql_fetch_row(res); row != NULL; row = mysql_fetch_row(res)) {
-		//cout << row[1] << row[2] << row[3] << endl;
-
+		//get the current stats of the team
 		int score1= atoi(row[1]);
 		int score2 = atoi(row[3]);
 		string team2 = row[2];
 		string team1 = teamName;
+		//reset wins and losses
 		int win = 0;
 		int zero = 0;
-		//status = teamStandings(team1, conn, mysql);
-		//status = teamStandings(team2, conn, mysql);
+
+		//chech which team won
 		if (score1 > score2) {
 			win++;
+			//make sure the teams have a standings
 			status = teamStandings(team1, conn, mysql);
+			//check the status of the function
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+			}
+			//store the result of the query
 			status = teamStandings(team2, conn, mysql);
-			
-			cout <<"  "<< row[0] << "  " << row[1] << "  " << row[2] << "  " << row[3] << endl;
+			//check the status of the function
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+			}
+			//update standings of the teams
 			status = UpdateRecordsNeg(team1, score1, score2, win, zero, conn, mysql);
+			//check the status of the function
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+			}
+			//update standings of the teams
 			status = UpdateRecordsNeg(team2, score2, score1, zero, win, conn, mysql);
+			//check the status of the function
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+			}
+			//reset wins
 			win = 0;
 		}
 		else {
+			//make sure the teams have a standings
 			status = teamStandings(team1, conn, mysql);
+			//check the status of the function
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+			}
+			//make sure the teams have a standings
 			status = teamStandings(team2, conn, mysql);
-
-			cout << "  " << row[0] << "  " << row[1] << "  " << row[2] << "  " << row[3] << endl;
-
+			//check the status of the function
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+			}
+			//update wins
 			win++;
+			//update standings of the teams
 			status = UpdateRecordsNeg(team1, score1, score2, win, zero, conn, mysql);
+			//check the status of the function
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+			}
+			//update standings of the teams
 			status = UpdateRecordsNeg(team2, score2, score1, win, zero, conn, mysql);
+			//check the status of the function
+			if (status != 0) {
+				// Print error message
+				cout << mysql_error(&mysql) << endl;
+			}
+			//reset wins
 			win = 0;
 		}
 
