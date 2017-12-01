@@ -26,3 +26,4 @@ if (!$_SESSION["logged"])
     echo "</table>";
 ?>
 
+<p>Back to <a href="mainMenu.php">the main menu</a>.</p>

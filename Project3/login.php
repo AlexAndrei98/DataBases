@@ -17,10 +17,16 @@ $queryString = "create table if not exists Recipes (rName char(200) not null, In
 $status = mysqli_query($conn, $queryString);
 if (!$status)
     die("Error creating table: Recepies" . mysqli_error($conn));
-$queryString = "create table if not exists Inventory (Ingredient char(100) not null, Quantity integer, primary key (Ingredient))";
+$queryString = "create table if not exists Inventory (Ingredient char(100) not null, Quantity integer )";
 $status = mysqli_query($conn, $queryString);
 if (!$status)
     die("Error creating table: " . mysqli_error($conn));
+
+$queryString = "alter table Inventory add check (Inventory.Ingredient >=0);";
+$status = mysqli_query($conn, $queryString);
+if (!$status)
+    die("Error creating table: " . mysqli_error($conn));
+
 mysqli_close($conn);
 ?>
 <p>Continue to <a href="mainMenu.php">the main menu</a>.</p>

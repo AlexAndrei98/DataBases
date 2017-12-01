@@ -37,6 +37,21 @@
                 if (!$status)
                     die("    1 Query Error : " . mysqli_error($conn));
         }
+        $isIngThere= "select count(Ingredient) as total from andreia.Inventory where Inventory.Ingredient=\"$ingridient\";";
+        $status = mysqli_query($conn, $isIngThere);
+        if (!$status)
+            die("Error in finding the inggridient in the invetory table : " . mysqli_error($conn));
+        $count = mysqli_fetch_assoc($status); 
+        //check if ingirdients is in the inventory
+        if ($count["total"]==0){
+            //add that ingiridient to the inventory with a value of 0
+            $initializeInventory = "insert into andreia.Inventory values (\"$ingridient\",\"0\")";
+            $status = mysqli_query($conn, $initializeInventory);
+            if (!$status)
+                die("Error adding to the Inventory table : " . mysqli_error($conn));
+        }
+
 ?>
 
 
+<p>Back to <a href="mainMenu.php">the main menu</a>.</p>
