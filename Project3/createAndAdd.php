@@ -12,8 +12,6 @@
         //checking if the conncection is right
         if (!$conn)
             die("Could not connect:".mysqli_connect_error());
-        else
-            echo "Succesfully connected to ". $_SESSION["host"];
 //----------------------sql connected-------------------------------
         $searchQuery= "select rName, Ingredient from andreia.Recipes where rName = \"$recepie\" and Ingredient = \"$ingridient\" ;";
         $search= mysqli_query($conn, $searchQuery);
@@ -25,14 +23,12 @@
         //check if ingirident is into the database
         if($row["Ingredient"]==$ingridient){
             $updateQuery="update andreia.Recipes set Quantity=\"$quantity\" where Ingredient=\"$ingridient\" and rName=\"Alex\";";
-            echo $updateQuery;
             $status = mysqli_query($conn, $updateQuery);
             if (!$status)
                 die("Query Error : " . mysqli_error($conn));
         }
         else {  
             $insertQuery = "insert into andreia.Recipes values (\"$recepie\",\"$ingridient\",\"$quantity\")";
-            echo $insertQuery;
             $status = mysqli_query($conn, $insertQuery);
                 if (!$status)
                     die("    1 Query Error : " . mysqli_error($conn));
@@ -53,5 +49,5 @@
 
 ?>
 
-
+<p>Back to <a href="createAndAdd.html"> Create a recipe or add ingredient to a recipe </a></p>
 <p>Back to <a href="mainMenu.php">the main menu</a>.</p>

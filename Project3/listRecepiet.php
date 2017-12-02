@@ -6,8 +6,6 @@ if (!$_SESSION["logged"])
     header("Location: index.html");
     if (!$conn)
         die("Could not connect:".mysqli_connect_error());
-    else
-        echo "Succesfully connected to ". $_SESSION["host"];
 //----------------------sql connected-------------------------------
 
     echo "<table border=1>";
@@ -25,5 +23,5 @@ if (!$_SESSION["logged"])
     }
     echo "</table>";
 ?>
-
+<p>Back to <a href="listRecepiet.html">list a recipe's ingredients </a></p>
 <p>Back to <a href="mainMenu.php">the main menu</a>.</p>
